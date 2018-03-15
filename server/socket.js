@@ -1,21 +1,22 @@
 
  module.exports = function(server){
     const io = require('socket.io')(server);
-    
+
     io.on("connection", function(socket){
         console.log("new connection!!");
+        console.log('Socket initiated!');
 
         socket.on("setname",function(data){
             socket.broadcast.emit("newuser",data);
-            socket.username = data.username;
+            socket.username = data.username; console.log("new connection!!");
         })
     
         socket.on("sendmessage", function(data){
-            socket.broadcast.emit("receivemessage",data);
+            socket.broadcast.emit("receivemessage",data); console.log("new connection!!");
         })
     
         socket.on("disconnect", function(socket){
-            socket.broadcast.emit("passuser",{username:socket.username});
+            socket.broadcast.emit("passuser",{username:socket.username}); console.log("new connection!!");
         })
     
         socket.on("joinrequest", function(socket){
