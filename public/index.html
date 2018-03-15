@@ -9,7 +9,9 @@
 <body>
     <script src="https://socket-io-chat.now.sh/socket.io/socket.io.js"></script>
     <script>
-  const socket = io(window.location.href);
+  const socketUrl = new URL(location);
+  socketUrl.port = 8080;
+  const socket = io(socketUrl.href);
 
     </script>
 </body>
