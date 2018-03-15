@@ -10,27 +10,22 @@ const server = require("http").createServer(app);
 var socketio = require("./socket")(server);
 
 // [CONFIGURE SECURITY-POLICY]
-securitySetup = function(app) {
-    var connectSources, helmet, scriptSources, styleSources;
-    helmet = require("helmet");
-    app.use(helmet());
-    app.use(helmet.hidePoweredBy());
-    app.use(helmet.noSniff());
-    app.use(helmet.crossdomain());
-    scriptSources = ["'self'", "'unsafe-inline'", "'unsafe-eval'", "ajax.googleapis.com"];
-    styleSources = ["'self'", "'unsafe-inline'", "ajax.googleapis.com"];
-    connectSources = ["'self'", "ws://localhost:3000"]
-    return app.use(helmet.contentSecurityPolicy({
-      defaultSrc: ["'self'"],
-      scriptSrc: scriptSources,
-      styleSrc: styleSources,
-      connectSrc: connectSources,
-      reportUri: '/report-violation',
-      reportOnly: false,
-      setAllHeaders: false,
-      safari5: false
-    }));
-  };
+app.use(helmet.csp({
+    'default-src': ["'self'"],
+    'connect-src': [
+      "'self'" , "blob:",
+      'wss:',
+      'websocket.domain',
+    ],
+    'font-src': ["'self'",'s3.amazonaws.com',"maxcdn.bootstrapcdn.com"],
+    'img-src': ["'self'", 'data:'],
+    'style-src': ["'self'","maxcdn.bootstrapcdn.com",'s3.amazonaws.com',"'unsafe-inline'"],
+    'script-src': ["'self'","'unsafe-inline'","'unsafe-eval'",'blob:'],
+    reportOnly: false,
+    setAllHeaders: false,
+    safari5: false
+  }))
+  
 // [console]
 console.log("uncytick module start")
 
