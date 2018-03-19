@@ -4,15 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://game.uncyclopedia.kr/w/load.php?debug=false&lang=ko&modules=ext.dismissableSiteNotice.styles%7Cmediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.vector.styles&only=styles&skin=vector" />
     <title>Document</title>
+    <style>
+        *{
+            box-sizing:border-box;
+        }
+        #messages{
+            width:95%;
+            height:10em;
+            border:1px solid black;
+            padding:0em 1.5em;
+            overflow:auto;
+            margin:0 auto;
+        }
+    </style>
 </head>
 <body>
+    <div id="gamepan">
+        <div><a></a><a></a><a></a></div>
+        <div><a></a><a></a><a></a></div>
+        <div><a></a><a></a><a></a></div>
+    </div>
+    <ul id="userlist" ></ul>
+    <ul id="messages" ></ul>
+    <input id="chat"/>
+</body>
     <script src="https://socket-io-chat.now.sh/socket.io/socket.io.js"></script>
-    <script>
-  const socketUrl = new URL(location);
-  socketUrl.port = 8080;
-  const socket = io(socketUrl.href);
-
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="src/main.js"></script>
 </body>
 </html>
