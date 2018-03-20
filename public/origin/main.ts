@@ -11,7 +11,7 @@ class Socket{
     public socket :IOStruct;
     public game: Game;
     constructor(url: string,private username: any = Math.random().toString() ){
-        this.socket = io("http://localhost:8080/uncytick") as any;
+        this.socket = io(url) as any;
         this.defineJoin();
         this.bindSocketListener();
     }

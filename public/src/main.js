@@ -2,7 +2,7 @@ var Socket = /** @class */ (function () {
     function Socket(url, username) {
         if (username === void 0) { username = Math.random().toString(); }
         this.username = username;
-        this.socket = io("http://localhost:8080/uncytick");
+        this.socket = io(url);
         this.defineJoin();
         this.bindSocketListener();
     }
