@@ -173,7 +173,7 @@ class Game{
 }
 
 
-const thisSocket: Socket = new Socket(window.location.href);
+const thisSocket: Socket = new Socket(window.location.origin + "/uncytt");
 
 $("#chat").keypress(function(e){
     if(e.key === "Enter" && $(this).val() != ""){
