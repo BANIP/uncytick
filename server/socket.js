@@ -1,7 +1,7 @@
 const uniqid = require("uniqid");
 
 module.exports = function(server){
-    const io = require('socket.io')(server, { wsEngine: 'ws' }).of("uncytick")
+    const io = require('socket.io')(server, { wsEngine: 'ws' }).of("uncytt")
     let clients = {};
     let sessions = {};
     const getRequestPull = (target) => clients[target.id]["requestPull"];

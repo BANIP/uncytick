@@ -147,7 +147,7 @@ var Game = /** @class */ (function () {
     };
     return Game;
 }());
-var thisSocket = new Socket(window.location.href);
+var thisSocket = new Socket(window.location.origin + "/uncytt");
 $("#chat").keypress(function (e) {
     if (e.key === "Enter" && $(this).val() != "") {
         thisSocket.socket.emit("sendmessage", { message: $(this).val() });
