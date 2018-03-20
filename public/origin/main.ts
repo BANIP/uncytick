@@ -10,10 +10,7 @@ interface IOStruct{
 class Socket{
     public socket :IOStruct;
     public game: Game;
-    constructor(url: string, port: string, private username: any = Math.random().toString() ){
-        const socketUrl: URL = new URL(url);
-        socketUrl.port = port;
-        console.log(socketUrl.href)
+    constructor(url: string,private username: any = Math.random().toString() ){
         this.socket = io("http://localhost:8080/uncytick") as any;
         this.defineJoin();
         this.bindSocketListener();
@@ -176,7 +173,7 @@ class Game{
 }
 
 
-const thisSocket: Socket = new Socket(window.location.href, window.location.port);
+const thisSocket: Socket = new Socket(window.location.href);
 
 $("#chat").keypress(function(e){
     if(e.key === "Enter" && $(this).val() != ""){

@@ -1,10 +1,7 @@
 var Socket = /** @class */ (function () {
-    function Socket(url, port, username) {
+    function Socket(url, username) {
         if (username === void 0) { username = Math.random().toString(); }
         this.username = username;
-        var socketUrl = new URL(url);
-        socketUrl.port = port;
-        console.log(socketUrl.href);
         this.socket = io("http://localhost:8080/uncytick");
         this.defineJoin();
         this.bindSocketListener();
@@ -150,7 +147,7 @@ var Game = /** @class */ (function () {
     };
     return Game;
 }());
-var thisSocket = new Socket(window.location.href, window.location.port);
+var thisSocket = new Socket(window.location.href);
 $("#chat").keypress(function (e) {
     if (e.key === "Enter" && $(this).val() != "") {
         thisSocket.socket.emit("sendmessage", { message: $(this).val() });
