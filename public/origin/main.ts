@@ -14,7 +14,7 @@ class Socket{
         const socketUrl: URL = new URL(url);
         socketUrl.port = port;
         console.log(socketUrl.href)
-        this.socket = io("http://localhost:8080/uncytt") as any;
+        this.socket = io("http://localhost:8080/uncytick") as any;
         this.defineJoin();
         this.bindSocketListener();
     }
@@ -37,8 +37,8 @@ class Socket{
         socket.on("getuserlist",(data) => {
             const buttonClickListener = ($li:JQuery,username: string, id: string) => {
                 socket.emit("requestjoin",{ targetId : id });
-                $li.closest("ul").find("li").css("color","initial");
-                $li.css("color","red");
+                $(".activePull").removeClass();
+                $li.addClass("activePull");
                 Chat.server(username + "에게 게임신청을 했어요." );
             }
             const $lis = data
@@ -50,7 +50,7 @@ class Socket{
                         .data("id",id);
 
                     if(username != this.username){
-                        const $button = $("<button>").text("게임 신청");
+                        const $button = $("<button>").text("게임 신청").addClass("btn-request");
                         $button.click(() => buttonClickListener($li, username, id));
                         $li.append($button);
                     }
@@ -88,7 +88,7 @@ class Chat{
     static client(username: string, message: string): void{
         const $li = $(`
             <li>
-                <a class='username' /> : <a class='message'>
+                <span class='username' /> : <span class='message'>
             </li>`);
         $li.find(".username").text(username);
         $li.find(".message").text(message);
@@ -97,7 +97,7 @@ class Chat{
     }
 
     private static moveBottom(){
-        $("#messages").scrollTop( $("#messages").height() )
+        $("#messages").scrollTop( $("#messages")[0].scrollHeight )
     }
 }
 
@@ -110,6 +110,7 @@ class Game{
     constructor(private socket :IOStruct,username: string, ememyusername :string){
         this.enemyUsername = ememyusername;
         Chat.server(ememyusername + "과의 게임이 시작되었어요!" );
+        $(".btn-request").fadeOut();
         const bindClick = ($target :JQuery,axis: [number,number]) => {
             const [x,y] = axis;
             $target.text("H").click(() => {
@@ -130,7 +131,7 @@ class Game{
 
     private bindSocketListener(){
         const socket :IOStruct = this.socket;
-        
+        const self: Game = this;
         socket.on("renewgamepan",function({ gamepan } : { gamepan : number[][]}){
             gamepan.forEach( (hori:number[] ,x : number) => 
                 hori.forEach( (cell:number, y:number) => {
@@ -153,12 +154,16 @@ class Game{
             const hideGamePan = () => $("#gamepan").slideUp();
             const messageType = {
                 "win":"게임 승리!! 축하드려요!",
-                "lose":"윽... 저버렸네요...",
+                "lose":"윽... 져버렸네요...",
                 "draw":"비겼어요!",
             }
             const endMessage = messageType[state];
+            Chat.server(endMessage);
+
+            $(".btn-request").fadeIn();
             setTimeout(hideGamePan,3000);
-            this.removesocketListener();
+            self.isGameEnd = true;
+            self.removesocketListener();
         });
         
     }

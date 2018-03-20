@@ -1,8 +1,12 @@
- const uniqid = require("uniqid");
+const uniqid = require("uniqid");
 
- module.exports = function(server){
-    const io = require('socket.io')(server, { wsEngine: 'ws' }).of("uncytt")
+module.exports = function(server){
+    const io = require('socket.io')(server, { wsEngine: 'ws' }).of("uncytick")
     let clients = {};
+    let sessions = {};
+    const getRequestPull = (target) => clients[target.id]["requestPull"];
+    const setRequestPull = (target,id) => clients[target.id]["requestPull"] = id;
+
     io.on("connection", function(socket){
 
         console.log('Socket initiated!');
@@ -14,10 +18,11 @@
             const client = {
                 id:socket.id,
                 username,
-
+                
             }
 
             clients[socket.id] = client;
+            sessions[socket.id] = socket;
             socket.username = username;
 
             socket.broadcast.emit("newuser",client);
@@ -26,6 +31,8 @@
     
         socket.on("disconnect", function(data){
             delete clients[socket.id];
+            delete sessions[socket.id];
+            
             socket.broadcast.emit("passuser",{
                 id:socket.id,
                 username: socket.username
@@ -42,18 +49,19 @@
         });
     
         socket.on("requestjoin", function(data){
-            const { targetId } = data;
-            const target = io.to(targetId)
-            socket.on("sendmessage",function(){ console.log(1 ) });
-            clients[socket.id]["requestPull"] = targetId;
-            if(clients[targetId]["requestPull"] === socket.id && !target.enemy){
-                new Game(socket,target);
-            } else {
-                target.emit("servermessage",{
-                    message: `${socket.username}이 게임 신청을 보냈습니다. 이 유저에게 게임 신청을 보내면 게임이 시작됩니다.`
-                });
-            }
+            const { targetId: enemyId } = data;
+            const enemy = sessions[enemyId];
+            socket = sessions[socket.id];
 
+            const isNotEndGame = (enemy) => enemy.enemy;
+            const sendMessage = (target, message) => target.emit("servermessage", {message});
+            setRequestPull(socket,enemy.id);
+
+            if( isNotEndGame(socket) ) sendMessage(socket,`아직 게임이 끝나지 않았어요.`);
+            else if( isNotEndGame(enemy) ) sendMessage(socket,`${enemy.username}은 아직 게임이 끝나지 않았어요.`);
+            else if( getRequestPull(enemy) === socket.id )  new Game(socket,enemy);
+            else sendMessage(enemy,`${socket.username}이 게임 신청을 보냈어요. 이 유저에게 게임신청을 하면 시작되요.`);
+            
         });
 
         class Game{
@@ -66,8 +74,6 @@
 
                 this.gamepan = [[0,0,0],[0,0,0],[0,0,0]];
 
-
-                this.initRoom();
                 this.toUsers( user => {
                     this.initListener(user);
                 });
@@ -75,13 +81,6 @@
                 this.turnNext();
             }
 
-            initRoom(){
-                this.roomname = uniqueid();
-                this.room = io.to(this.roomname);
-                this.user1.join( this.roomname );
-                this.user2.join( this.roomname );
-            }
-        
             toUsers(callback){
                 this.users.forEach((user) => callback(user));
             }
@@ -100,18 +99,16 @@
             }
         
             initListener(user){
-                const room = this.room;
                 const isMyTurn = (user) => user.id === this.turn.id;
                 const isDrawn = ([x,y]) => this.gamepan[x][y];
                 const isGameEnd = (result) => result !== null;
 
-                room.emit("gamestart",{
+                user.emit("gamestart",{
                     enemyUsername : user.enemy.username,
                     enemyId : user.enemy.id
                 });
 
-                room.on("draw",({ axis }) => {
-                    console.log(axis)
+                user.on("draw",({ axis }) => {
                     try{
                         if( !isMyTurn(user) ) throw {message: "내 턴이 아니에요."}
                         if( isDrawn(axis) ) throw {message: "이미 둔 장소에요."}
@@ -132,7 +129,7 @@
                     this.gameEnd(false);
                 }
 
-                room.on("disconnect",this.disconnectListener);
+                user.on("disconnect",this.disconnectListener);
             }
 
             gameEnd(result){
@@ -144,7 +141,7 @@
                 const isGameDraw =  (result) => result === 0;
 
                 if( getWinner( result ) ){
-                    const winner = isGameEnd( result );
+                    const winner = getWinner( result );
                     const looser = winner.enemy;
                     winner.emit("gameend",{state: "win"});
                     looser.emit("gameend",{state: "lose"});
@@ -152,7 +149,7 @@
                     console.log( isGameDraw(result))
                     this.toUsers(user => user.emit("gameend",{state: "draw"}));
                 } else {
-                    this.toUsers(user => user.emit("servermessage",{message: "게임 도중에 나가버려서 강제종료됬어요!"}));
+                    this.toUsers(user => user.emit("servermessage",{message: "상대가 게임 도중에 나가버려서 강제종료됬어요!"}));
                     this.toUsers(user => user.emit("gameend",{state: "draw"}));
                 }
                 this.toUsers(user => delete user.enemy);
@@ -160,16 +157,20 @@
             }
         
             removeListener(){
-                this.room.removeAllListeners("draw");
-                this.room.removeListener("disconnect",this.disconnectListener);
-
                 this.users.map(user => {
-                   delete user.enemy;
+                    try{
+                        user.removeAllListeners("draw");
+                        user.removeListener("disconnect",this.disconnectListener);
+                        setRequestPull(user,null);
+                        delete user.enemy;
+                    } catch (e){
+                        console.log(e);
+                    }
+
                 });
             }
         
             draw(user,axis){
-                console.log(axis)
                 const [x,y] = axis;
                 this.gamepan[x][y] = this.user1 === user ? 1: -1;
                 return this.isWin();

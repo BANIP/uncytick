@@ -5,7 +5,7 @@ var Socket = /** @class */ (function () {
         var socketUrl = new URL(url);
         socketUrl.port = port;
         console.log(socketUrl.href);
-        this.socket = io("http://localhost:8080/uncytt");
+        this.socket = io("http://localhost:8080/uncytick");
         this.defineJoin();
         this.bindSocketListener();
     }
@@ -26,8 +26,8 @@ var Socket = /** @class */ (function () {
         socket.on("getuserlist", function (data) {
             var buttonClickListener = function ($li, username, id) {
                 socket.emit("requestjoin", { targetId: id });
-                $li.closest("ul").find("li").css("color", "initial");
-                $li.css("color", "red");
+                $(".activePull").removeClass();
+                $li.addClass("activePull");
                 Chat.server(username + "에게 게임신청을 했어요.");
             };
             var $lis = data
@@ -39,7 +39,7 @@ var Socket = /** @class */ (function () {
                     .text(username)
                     .data("id", id);
                 if (username != _this.username) {
-                    var $button = $("<button>").text("게임 신청");
+                    var $button = $("<button>").text("게임 신청").addClass("btn-request");
                     $button.click(function () { return buttonClickListener($li, username, id); });
                     $li.append($button);
                 }
@@ -75,14 +75,14 @@ var Chat = /** @class */ (function () {
         Chat.moveBottom();
     };
     Chat.client = function (username, message) {
-        var $li = $("\n            <li>\n                <a class='username' /> : <a class='message'>\n            </li>");
+        var $li = $("\n            <li>\n                <span class='username' /> : <span class='message'>\n            </li>");
         $li.find(".username").text(username);
         $li.find(".message").text(message);
         $("#messages").append($li);
         Chat.moveBottom();
     };
     Chat.moveBottom = function () {
-        $("#messages").scrollTop($("#messages").height());
+        $("#messages").scrollTop($("#messages")[0].scrollHeight);
     };
     return Chat;
 }());
@@ -92,6 +92,7 @@ var Game = /** @class */ (function () {
         this.isGameEnd = false;
         this.enemyUsername = ememyusername;
         Chat.server(ememyusername + "과의 게임이 시작되었어요!");
+        $(".btn-request").fadeOut();
         var bindClick = function ($target, axis) {
             var x = axis[0], y = axis[1];
             $target.text("H").click(function () {
@@ -109,6 +110,7 @@ var Game = /** @class */ (function () {
     }
     Game.prototype.bindSocketListener = function () {
         var socket = this.socket;
+        var self = this;
         socket.on("renewgamepan", function (_a) {
             var gamepan = _a.gamepan;
             gamepan.forEach(function (hori, x) {
@@ -131,12 +133,15 @@ var Game = /** @class */ (function () {
             var hideGamePan = function () { return $("#gamepan").slideUp(); };
             var messageType = {
                 "win": "게임 승리!! 축하드려요!",
-                "lose": "윽... 저버렸네요...",
+                "lose": "윽... 져버렸네요...",
                 "draw": "비겼어요!",
             };
             var endMessage = messageType[state];
+            Chat.server(endMessage);
+            $(".btn-request").fadeIn();
             setTimeout(hideGamePan, 3000);
-            this.removesocketListener();
+            self.isGameEnd = true;
+            self.removesocketListener();
         });
     };
     Game.prototype.removesocketListener = function () {
