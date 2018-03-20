@@ -4,15 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://game.uncyclopedia.kr/w/load.php?debug=false&lang=ko&modules=ext.dismissableSiteNotice.styles%7Cmediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.vector.styles&only=styles&skin=vector" />
     <title>Document</title>
+    <style>
+        .btn-request{
+            margin-left:0.5em;
+        }
+        body,html{
+            height:100%;
+        }
+
+        body{
+            background:#eee;
+        }
+        *{
+            box-sizing:border-box;
+            padding:0;
+            margin:0;
+        }
+
+        .wrap{
+            padding:0.5em;
+        }
+
+        #gamepan{
+            display: none;
+        }
+
+        #gamepan a {
+            display: block;
+            padding: 1em;
+            font-size: 1.2em;
+        }
+
+        #gamepan > div {
+            display: flex;
+        }
+
+        .activePull{
+            color:red;
+        }
+
+        .activeGame{
+            color:blue;
+        }
+        .scrollbox{
+            background:white;
+            width:100%;
+            height:10em;
+            border:1px solid #ddd;
+            overflow:auto;
+            margin:0;
+            margin-bottom:0.2em;
+            padding:0.5em 1.5em;
+        }
+
+        #chat{
+            width:100%;
+        }
+    </style>
 </head>
 <body>
+    <div id="gamepan">
+        <div><a></a><a></a><a></a></div>
+        <div><a></a><a></a><a></a></div>
+        <div><a></a><a></a><a></a></div>
+    </div>
+    <div class="wrap">
+        <ul id="userlist" class="scrollbox"></ul>
+        <ul id="messages" class="scrollbox"></ul>
+        <input id="chat" placeholder="메세지를 입력하세요..."/>
+    </div>
+</body>
     <script src="https://socket-io-chat.now.sh/socket.io/socket.io.js"></script>
-    <script>
-  const socketUrl = new URL(location);
-  socketUrl.port = 8080;
-  const socket = io(socketUrl.href);
-
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="src/main.js"></script>
 </body>
 </html>

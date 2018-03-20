@@ -1,0 +1,12 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"target": "es5",        
+		"allowJs": true,
+		"outDir": "public/src",
+		"disableSizeLimit": true
+	},
+	"include": [
+		"public/origin/*.ts",
+	]
+}
